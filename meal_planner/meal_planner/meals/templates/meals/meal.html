@@ -1,0 +1,17 @@
+{% extends 'meals/base.html' %}
+
+{% block content %}
+    <p>Meal: {{ meal }}</p>
+
+    <p>Dishes</p>
+    <ul>
+        {% for dish in dishes %}
+            <li>
+                <p>{{ dish.name }}</p>
+                <p>{{ dish.description|linebreaks }}</p>
+            </li>
+        {% empty %}
+            <li>no bitches</li>
+        {% endfor %}
+    </ul>
+{% endblock content %}
