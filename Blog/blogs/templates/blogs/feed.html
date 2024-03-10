@@ -4,7 +4,7 @@
     <ul>
         {% for post in posts %}
         <li>
-            <h3><a href="{% url 'blogs:post' post.id %}">Post N {{ post.id}}</a></h3>
+            <h3><a href="{% url 'blogs:post' post.id %}">Post N {{ post.id }}</a></h3>
             <p>{{ post.date_added|date:'M d, Y H:i'}}</p>
             <p>{{ post }}</p>
         </li>

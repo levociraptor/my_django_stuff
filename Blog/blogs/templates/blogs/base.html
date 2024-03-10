@@ -1,3 +1,21 @@
 <h1><a href="{% url 'blogs:feed' %}">Feed</a></h1>
 
+<p>
+    {% if user.is_authenticated %}
+        Hello, {{ user.username }}
+        <form method="post" action="{% url 'users:logout' %}">
+            {% csrf_token %}
+            <button type="submit">log out</button>
+        </form>
+    {% else %}
+        <form method="post" action="{% url 'users:register' %}">
+            {% csrf_token %}
+            <button type="submit">register</button>
+        </form>
+        <form method="post" action="{% url 'users:login' %}">
+            {% csrf_token %}
+            <button type="submit">log in</button>
+        </form>
+    {% endif %}
+</p>
 {% block content %}{% endblock content %}

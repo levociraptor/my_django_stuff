@@ -9,10 +9,19 @@
             <li>
                 <p>{{ comment.date_added|date:'M d, Y H:i' }}</p>
                 <p>{{ comment.text|linebreaks }}</p>
+                <p><a href="{% url 'blogs:edit_comment' comment.id %}">Edit comment</a></p>
             </li>
         {% empty %}
             <li>No comments. You could leave your comments here.</li>
         {% endfor %}
     </ul>
+
+    <p>
+        <a href="{% url 'blogs:new_comment' post.id %}">Add a new comment</a>
+    </p>
+    <p>
+        <a href="{% url 'blogs:edit_post' post.id %}">Edit post</a>
+    </p>
+
 {% endblock content %}
 

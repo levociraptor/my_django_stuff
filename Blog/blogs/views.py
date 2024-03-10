@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 
-from .models import Post
+from .models import Post, Comment
 from .forms import PostForm, CommentForm
 
 
@@ -47,3 +47,46 @@ def new_comment(request, post_id):
         form = CommentForm(data=request.POST)
         if form.is_valid():
             new_comment = form.save(commit=False)
+            new_comment.post = post
+            new_comment.save()
+            return redirect('blogs:post', post_id=post_id)
+
+    # Вывести пустую или недействительную форму
+    context = {'post': post, 'form': form}
+    return render(request, 'blogs/new_comment.html', context)
+
+
+def edit_post(request, post_id):
+    """Редактирует существующий пост"""
+    post = Post.objects.get(id=post_id)
+
+    if request.method != 'POST':
+        # Исходный запрос; Форма заполняется данными текущей записи
+        form = PostForm(instance=post)
+    else:
+        # Отправка данных POST; обработать данные
+        form = PostForm(instance=post, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('blogs:post', post_id=post_id)
+
+    context = {'post': post, 'form': form}
+    return render(request, 'blogs/edit_post.html', context)
+
+def edit_comment(request, comment_id):
+    """Редактирует существующий комментарий"""
+    comment = Comment.objects.get(id=comment_id)
+    post = comment.post
+
+    if request.method != 'POST':
+        # Исходный запрос; форма заполняется текущими данными
+        form = CommentForm(instance=comment)
+    else:
+        # Отправда данных POST; обработать данные
+        form = CommentForm(instance=comment, data=request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('blogs:post', post_id=post.id)
+
+    context = {'comment': comment, "post": post, 'form': form}
+    return render(request, 'blogs/edit_comment.html', context)

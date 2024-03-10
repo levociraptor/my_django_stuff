@@ -1,26 +1,37 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 
 from .forms import TopicForm, EntryForm
 from .models import Topic, Entry
+from django.http import Http404
 
+def check_topic_owner(owner, request):
+    if owner != request.user:
+        raise Http404
 
 def index(request):
     """Домащняя страница приложени я Learning Log"""
     return render(request, 'learning_logs/index.html')
 
+@login_required
 def topics(request):
     """Выводит список тем"""
-    topics = Topic.objects.order_by('date_added')
+    topics = Topic.objects.filter(owner=request.user).order_by('date_added')
     context = {'topics': topics}
     return render(request, 'learning_logs/topics.html', context)
 
+@login_required
 def topic(request, topic_id):
     """Выводит одну тему и все ее записи"""
     topic = Topic.objects.get(id=topic_id)
+    # Проверка что тема принадлежит текущему пользователю
+    check_topic_owner(topic.owner, request)
+
     entries = topic.entry_set.order_by('-date_added')
     context = {'topic': topic, 'entries': entries}
     return render(request, 'learning_logs/topic.html', context)
 
+@login_required
 def new_topic(request):
     """Определяем новую тему"""
     if request.method != 'POST':
@@ -30,16 +41,20 @@ def new_topic(request):
         # Отправлены данные POST; обработать данные
         form = TopicForm(data=request.POST)
         if form.is_valid():
-            form.save()
+            new_topic = form.save(commit=False)
+            new_topic.owner = request.user
+            new_topic.save()
             return redirect('learning_logs:topics')
 
     # Вывести пустую или недействительную фому
     context = {'form': form}
     return render(request, 'learning_logs/new_topic.html', context)
 
+@login_required
 def new_entry(request, topic_id):
     """Добавляет новую запись по конкретной теме"""
     topic = Topic.objects.get(id=topic_id)
+    check_topic_owner(topic.owner, request)
     if request.method != 'POST':
         # Данные не отправлялись; создается пустая форма
         form = EntryForm()
@@ -49,6 +64,7 @@ def new_entry(request, topic_id):
         if form.is_valid():
             new_entry = form.save(commit=False)
             new_entry.topic = topic
+
             new_entry.save()
             return redirect('learning_logs:topic', topic_id=topic_id)
 
@@ -56,10 +72,12 @@ def new_entry(request, topic_id):
     context = {'topic': topic, 'form': form}
     return render(request, 'learning_logs/new_entry.html', context)
 
+@login_required
 def edit_entry(request, entry_id):
     """Редактирует существующую запись"""
     entry = Entry.objects.get(id=entry_id)
     topic = entry.topic
+    check_topic_owner(topic.owner, request)
 
     if request.method != 'POST':
         # Исходный запрос; форма заполняется данными текущей записи
