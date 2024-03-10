@@ -1,15 +1,18 @@
 {% extends 'blogs/base.html' %}
 
 {% block content %}
-    <h3>Post :</h3>
+    <h3>{{ post.owner }}</h3>
     <p>{{ post.text|linebreaks }}</p>
 
     <ul>
         {% for comment in comments %}
             <li>
-                <p>{{ comment.date_added|date:'M d, Y H:i' }}</p>
+                <p>User: <b>{{ comment.owner.username }}</b></p>
                 <p>{{ comment.text|linebreaks }}</p>
-                <p><a href="{% url 'blogs:edit_comment' comment.id %}">Edit comment</a></p>
+                <p>{{ comment.date_added|date:'M d, Y H:i' }}</p>
+                {% if user == comment.owner %}
+                    <p><a href="{% url 'blogs:edit_comment' comment.id %}">Edit comment</a></p>
+                {% endif %}
             </li>
         {% empty %}
             <li>No comments. You could leave your comments here.</li>
@@ -17,10 +20,14 @@
     </ul>
 
     <p>
-        <a href="{% url 'blogs:new_comment' post.id %}">Add a new comment</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'blogs:new_comment' post.id %}">Add a new comment</a>
+        {% endif %}
     </p>
     <p>
-        <a href="{% url 'blogs:edit_post' post.id %}">Edit post</a>
+        {% if user == post.owner %}
+            <a href="{% url 'blogs:edit_post' post.id %}">Edit post</a>
+        {% endif %}
     </p>
 
 {% endblock content %}

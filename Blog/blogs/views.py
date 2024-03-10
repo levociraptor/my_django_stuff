@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import Http404
 
 from .models import Post, Comment
 from .forms import PostForm, CommentForm
@@ -7,7 +9,8 @@ from .forms import PostForm, CommentForm
 def feed(request):
     """Домашняя страница"""
     posts = Post.objects.order_by('date_added')
-    context = {'posts': posts}
+    user = request.user
+    context = {'posts': posts, 'user': user}
     return render(request, 'blogs/feed.html', context)
 
 
@@ -15,10 +18,12 @@ def post(request, post_id):
     """Страница c постом и комментами к нему"""
     post = Post.objects.get(id=post_id)
     comments = post.comment_set.order_by('date_added')
-    context = {'post': post, 'comments': comments}
+    # Необходиом передать в шаблон залогиненного юзера
+    user = request.user
+    context = {'post': post, 'comments': comments, 'user': user}
     return render(request, 'blogs/post.html', context)
 
-
+@login_required
 def new_post(request):
     """Создание нового поста"""
     if request.method != 'POST':
@@ -28,13 +33,16 @@ def new_post(request):
         # Отправлены данные POST; обработать данные
         form = PostForm(data=request.POST)
         if form.is_valid():
-            form.save()
+            new_post = form.save(commit=False)
+            new_post.owner = request.user
+            new_post.save()
             return redirect('blogs:feed')
 
     # Вывести пустую или недейственную форму
     context = {'form': form}
     return render(request, 'blogs/new_post.html', context)
 
+@login_required
 def new_comment(request, post_id):
     """Добавляет новый комментарий к записи"""
     post = Post.objects.get(id=post_id)
@@ -48,6 +56,7 @@ def new_comment(request, post_id):
         if form.is_valid():
             new_comment = form.save(commit=False)
             new_comment.post = post
+            new_comment.owner = request.user
             new_comment.save()
             return redirect('blogs:post', post_id=post_id)
 
@@ -56,6 +65,7 @@ def new_comment(request, post_id):
     return render(request, 'blogs/new_comment.html', context)
 
 
+@login_required
 def edit_post(request, post_id):
     """Редактирует существующий пост"""
     post = Post.objects.get(id=post_id)
@@ -73,6 +83,7 @@ def edit_post(request, post_id):
     context = {'post': post, 'form': form}
     return render(request, 'blogs/edit_post.html', context)
 
+@login_required
 def edit_comment(request, comment_id):
     """Редактирует существующий комментарий"""
     comment = Comment.objects.get(id=comment_id)
