@@ -1,34 +1,56 @@
 {% extends 'blogs/base.html' %}
 
-{% block content %}
-    <h3>{{ post.owner }}</h3>
-    <p>{{ post.text|linebreaks }}</p>
+{% block page_header %}
+    <div class="row">
+        <div class="col-sm-1">
+            <h1 class="ms-2">{{ post.owner }}</h1>
+        </div>
+        <div class="col-sm-2 mt-3">
+            <p>{{ post.date_added|date:'M d, Y H:i' }}</p>
+        </div>
+    </div>
 
-    <ul>
+
+{% endblock page_header %}
+
+{% block content %}
+    <div class="border-bottom"></div>
+    <p class="ms-2">{{ post.text|linebreaks }}</p>
+    <p>
+        {% if user == post.owner %}
+            <a href="{% url 'blogs:edit_post' post.id %}">Edit post</a>
+        {% endif %}
+    </p>
+    <div class="border-bottom mb-4"></div>
+    <div>
         {% for comment in comments %}
-            <li>
-                <p>User: <b>{{ comment.owner.username }}</b></p>
-                <p>{{ comment.text|linebreaks }}</p>
-                <p>{{ comment.date_added|date:'M d, Y H:i' }}</p>
-                {% if user == comment.owner %}
-                    <p><a href="{% url 'blogs:edit_comment' comment.id %}">Edit comment</a></p>
-                {% endif %}
-            </li>
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-light">
+                    <h4>User: {{ comment.owner.username }}</h4>
+                </div>
+                <div class="card-body p-3">
+                    <p>{{ comment.text|linebreaks }}</p>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <p class="col-sm-2">{{ comment.date_added|date:'M d, Y H:i' }}</p>
+                        {% if user == comment.owner %}
+                            <p class="col-sm-2"><a href="{% url 'blogs:edit_comment' comment.id %}">Edit comment</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         {% empty %}
             <li>No comments. You could leave your comments here.</li>
         {% endfor %}
-    </ul>
+    </div>
 
     <p>
         {% if user.is_authenticated %}
             <a href="{% url 'blogs:new_comment' post.id %}">Add a new comment</a>
         {% endif %}
     </p>
-    <p>
-        {% if user == post.owner %}
-            <a href="{% url 'blogs:edit_post' post.id %}">Edit post</a>
-        {% endif %}
-    </p>
+
 
 {% endblock content %}
 

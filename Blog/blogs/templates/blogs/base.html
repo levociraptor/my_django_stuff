@@ -1,21 +1,67 @@
-<h1><a href="{% url 'blogs:feed' %}">Feed</a></h1>
+{% load bootstrap5 %}
 
-<p>
-    {% if user.is_authenticated %}
-        Hello, {{ user.username }}
-        <form method="post" action="{% url 'users:logout' %}">
-            {% csrf_token %}
-            <button type="submit">log out</button>
-        </form>
-    {% else %}
-        <form method="post" action="{% url 'users:register' %}">
-            {% csrf_token %}
-            <button type="submit">register</button>
-        </form>
-        <form method="post" action="{% url 'users:login' %}">
-            {% csrf_token %}
-            <button type="submit">log in</button>
-        </form>
-    {% endif %}
-</p>
-{% block content %}{% endblock content %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1,
+            shrink-to-fit=no" >
+        <title>Blog</title>
+
+        {% bootstrap_css %}
+        {% bootstrap_javascript %}
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4 p-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="{% url 'blogs:feed' %}">Feed</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarCollapse" aria-controls="navbarCollapse"
+                aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarCollapse">
+                    <ul class="navbar-nav ms-auto mb-2 mb-md-0">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item me-3 mt-1">
+                                <span class="navbar-text"><h2 class="text-light">Hello, {{ user.username }}</h2></span>
+                            </li>
+                            <li class="nav-item m-2">
+                                <form class="d-flex" method="post" action="{% url 'users:logout' %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary" type="submit">log out</button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <li class="nav-item m-2">
+                                <form class="d-flex" method="post" action="{% url 'users:register' %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary" type="submit">register</button>
+                                </form>
+                            </li>
+                            <li class="nav-item m-2">
+                                <form class="d-flex" method="post" action="{% url 'users:login' %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-primary" type="submit">log in</button>
+                                </form>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container">
+            <div class=" mb-2">
+                {% block page_header %}{% endblock page_header %}
+            </div>
+            <div>
+                {% block content %}{% endblock content %}
+            </div>
+        </main>
+    </body>
+</html>
+
+
+
